@@ -22,7 +22,7 @@ bool monochrome(const char* filename)
 
     auto start = system_clock::now();// 時間計測用：気にしないこと
 
-    // ■ OpenMPを使って並列化してください。
+    #pragma omp parallel for
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             unsigned char* r = &pixels[(y * width + x) * bpp + 0];
@@ -57,16 +57,21 @@ bool blur(const char *filename, int num)
 
     if (pixels == NULL) return false;// ファイルが読めなかった
 
+    unsigned char* buff = (unsigned char*)malloc(bpp * width * height);
+    if (buff == NULL) return false;// メモリが確保できなかった
+
     auto start = system_clock::now();// 時間計測用：気にしないこと
 
-    // ■ OpenMPを使って並列化してください。
-    // 依存性があり、並列化すると処理の順番によって結果が変わる可能性があるので、変わらないように注意すること
+    unsigned char* read = pixels;
+    unsigned char* write = buff;
+
     for (int i = 0; i < num; i++) {
+        #pragma omp parallel for
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                unsigned char* r = &pixels[(y * width + x) * bpp + 0];
-                unsigned char* g = &pixels[(y * width + x) * bpp + 1];
-                unsigned char* b = &pixels[(y * width + x) * bpp + 2];
+                unsigned char* r = &read[(y * width + x) * bpp + 0];
+                unsigned char* g = &read[(y * width + x) * bpp + 1];
+                unsigned char* b = &read[(y * width + x) * bpp + 2];
 
                 int cr = *r;
                 int cg = *g;
@@ -101,11 +106,14 @@ bool blur(const char *filename, int num)
                     pixel_count++;
                 }
                 // そのまま平均をとると桁落ちで暗くなるので、0.5だけ明るくする
-                *r = (cr + pixel_count / 2) / pixel_count;
-                *g = (cg + pixel_count / 2) / pixel_count;
-                *b = (cb + pixel_count / 2) / pixel_count;
+                write[(y * width + x) * bpp + 0] = (cr + pixel_count / 2) / pixel_count;
+                write[(y * width + x) * bpp + 1] = (cg + pixel_count / 2) / pixel_count;
+                write[(y * width + x) * bpp + 2] = (cb + pixel_count / 2) / pixel_count;
             }
         }
+        unsigned char* p = read;
+        read = write;
+        write = p;
     }
 
     // 時間計測用：気にしないこと
@@ -113,8 +121,9 @@ bool blur(const char *filename, int num)
     std::cout << duration_cast<milliseconds>(end - start).count() << " milli sec. \n";
 
     // ファイルの保存
-    stbi_write_png("blur.png", static_cast<int>(width), static_cast<int>(height), bpp, pixels, 0);
+    stbi_write_png("blur.png", static_cast<int>(width), static_cast<int>(height), bpp, read, 0);
     // メモリの破棄
+    free(buff);
     stbi_image_free(pixels);
 
     return true;
