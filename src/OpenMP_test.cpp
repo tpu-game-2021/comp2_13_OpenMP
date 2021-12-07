@@ -23,19 +23,19 @@ bool monochrome(const char* filename)
     auto start = system_clock::now();// 時間計測用：気にしないこと
 
     // ■ OpenMPを使って並列化してください。
+
+#pragma omp for
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             unsigned char* r = &pixels[(y * width + x) * bpp + 0];
             unsigned char* g = &pixels[(y * width + x) * bpp + 1];
             unsigned char* b = &pixels[(y * width + x) * bpp + 2];
-
             int lum = ((int)*r + (int)*g + (int)*b) / 3;
             *r = lum;
             *g = lum;
             *b = lum;
         }
     }
-
     // 時間計測用：気にしないこと
     auto end = system_clock::now();
     std::cout << duration_cast<microseconds>(end - start).count() << " micro sec. \n";
@@ -48,8 +48,8 @@ bool monochrome(const char* filename)
     return true;
 }
 
-// ぼかす
-bool blur(const char *filename, int num)
+    // ぼかす
+bool blur(const char* filename, int num)
 {
     int width, height; //画像サイズの格納先
     int bpp; //一画素のバイト数
@@ -61,8 +61,10 @@ bool blur(const char *filename, int num)
 
     // ■ OpenMPを使って並列化してください。
     // 依存性があり、並列化すると処理の順番によって結果が変わる可能性があるので、変わらないように注意すること
+#pragma omp parallel for
     for (int i = 0; i < num; i++) {
         for (int y = 0; y < height; y++) {
+        #pragma omp for private(cr, cg ,cb)
             for (int x = 0; x < width; x++) {
                 unsigned char* r = &pixels[(y * width + x) * bpp + 0];
                 unsigned char* g = &pixels[(y * width + x) * bpp + 1];
@@ -107,7 +109,6 @@ bool blur(const char *filename, int num)
             }
         }
     }
-
     // 時間計測用：気にしないこと
     auto end = system_clock::now();
     std::cout << duration_cast<milliseconds>(end - start).count() << " milli sec. \n";
