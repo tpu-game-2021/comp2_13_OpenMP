@@ -11,6 +11,8 @@
 using namespace std::chrono;// 時間計測用：気にしないこと
 
 
+//変更を加える
+
 // モノクロ化
 bool monochrome(const char* filename)
 {
