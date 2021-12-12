@@ -84,7 +84,7 @@ bool blur(const char *filename, int num)
                     cg += *(g - bpp);
 //#pragma omp atomic
                     cb += *(b - bpp);
-//#pragma omp atomic
+#pragma omp atomic
                     pixel_count++;
                 }
                 // 右の色を加える
@@ -95,7 +95,7 @@ bool blur(const char *filename, int num)
                     cg += *(g + bpp);
 //#pragma omp atomic
                     cb += *(b + bpp);
-//#pragma omp atomic
+#pragma omp atomic
                     pixel_count++;
                 }
                 // 上の色を加える
@@ -106,7 +106,7 @@ bool blur(const char *filename, int num)
                     cg += *(g - width * bpp);
 //#pragma omp atomic
                     cb += *(b - width * bpp);
-//#pragma omp atomic
+#pragma omp atomic
                     pixel_count++;
                 }
                 // 下の色を加える
@@ -117,7 +117,7 @@ bool blur(const char *filename, int num)
                     cg += *(g + width * bpp);
 //#pragma omp atomic
                     cb += *(b + width * bpp);
-//#pragma omp atomic
+#pragma omp atomic
                     pixel_count++;
                 }
                 // そのまま平均をとると桁落ちで暗くなるので、0.5だけ明るくする
