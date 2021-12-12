@@ -120,6 +120,7 @@ bool blur(const char *filename, int num)
     return true;
 }
 
+
 int main()
 {
     const char* filename = "two_sisters.png";
