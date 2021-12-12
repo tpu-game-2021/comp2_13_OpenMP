@@ -23,6 +23,7 @@ bool monochrome(const char* filename)
     auto start = system_clock::now();// 時間計測用：気にしないこと
 
     // ■ OpenMPを使って並列化してください。
+#pragma omp parallel 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             unsigned char* r = &pixels[(y * width + x) * bpp + 0];
@@ -35,7 +36,7 @@ bool monochrome(const char* filename)
             *b = lum;
         }
     }
-
+    
     // 時間計測用：気にしないこと
     auto end = system_clock::now();
     std::cout << duration_cast<microseconds>(end - start).count() << " micro sec. \n";
